@@ -11,25 +11,22 @@ namespace Catalog.API.Repositories
         {
             _context = context ?? throw new ArgumentNullException("catalogContext");
         }
-        public Task<Product> CreateProduct(Product product)
+        public async Task<Product> CreateProduct(Product product)
         {
-            throw new NotImplementedException();
+            await _context.Products.InsertOneAsync(product);
+            return await GetProductById(product.Id);
         }
 
-        public Task<bool> DeleteProduct(string productId)
+        public async Task<bool> DeleteProduct(string productId)
         {
-            throw new NotImplementedException();
+            var result = await _context.Products.DeleteOneAsync(filter => filter.Id == productId);
+            return result.IsAcknowledged && result.DeletedCount > 0;
         }
 
         public async Task<IEnumerable<Product>> GetProductByCategory(string categoryName)
         {
             return await _context.Products.Find(p => p.Category == categoryName).ToListAsync();
-        }
-
-        public async Task<IEnumerable<Product>> GetProductByDescription(string productDescription)
-        {
-            return await _context.Products.Find(p => p.Description == productDescription).ToListAsync();
-        }
+        }       
 
         public async Task<Product> GetProductById(string productId)
         {
@@ -46,9 +43,13 @@ namespace Catalog.API.Repositories
             return await _context.Products.Find(p => true).ToListAsync();
         }
 
-        public Task<Product> UpdateProduct(Product product)
+        public async Task<Product> UpdateProduct(Product product)
         {
-            throw new NotImplementedException();
+            var result = await _context.Products.ReplaceOneAsync(filter => filter.Id == product.Id, product);
+            if(result.IsAcknowledged && result.ModifiedCount > 0)
+                return await _context.Products.Find(filter => filter.Id == product.Id).FirstOrDefaultAsync();
+            
+            return null;
         }
     }
 }

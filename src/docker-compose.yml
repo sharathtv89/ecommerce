@@ -9,7 +9,10 @@ services:
       - "27017:27017"
       
     networks:
-      - catalog    
+      - catalog
+
+    volumes: 
+      - ~/mongo/data:/data/db    
 
   catalogapi:
     image: catalog-image
